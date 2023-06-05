@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	dbInstance "github.com/shwetank0714/jwtmodfile/database"
@@ -66,4 +67,62 @@ func GetAllUsers() []primitive.M {
 	defer cursor.Close(context.Background())
 
 	return allUsersList
+}
+
+// User Login ---
+/*
+	if (user Exists in DB) {
+		if (userJwtExpired) {
+			regenrate the token and Update in DB,
+			throw successful Login with updated data
+		}
+		else{
+			throw successful login with the data
+		}
+	}
+	else{
+
+	}
+*/
+func UserLoginHelper(emailId string, password string)  (model.User, error) {
+	
+	// user_id, _ := primitive.ObjectIDFromHex(userId)
+
+	userFilter := bson.M{"email" : emailId}
+
+	var user model.User
+
+	err := collection.FindOne(context.Background(),userFilter).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			log.Println("No User Found")
+			return model.User{},errors.New("user not found")
+		} else{
+			log.Fatal(err)
+			return model.User{}, err
+		}
+	}
+	
+	// Check if Password is correct
+	if password != user.Password {
+		return model.User{}, errors.New("wrong password entered")
+	}
+
+	// Check if the JWT Token is expired Or Not!
+	expired := validateJwtToken(user.Token)
+
+	if expired {
+		user.Token, _ = GetJwtToken(user.ID.String())
+		updateUserToken := bson.M{"$set": bson.M{"token": user.Token}}
+		_, err := collection.UpdateOne(context.Background(),userFilter,updateUserToken)
+
+		if err != nil {
+			log.Fatal(err)
+			return model.User{}, err
+		}
+	}
+
+	return user, nil
+	
 }
