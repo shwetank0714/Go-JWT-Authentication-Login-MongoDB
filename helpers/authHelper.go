@@ -106,6 +106,7 @@ func UserLoginHelper(emailId string, password string)  (model.User, error) {
 	
 	// Check if Password is correct
 	if password != user.Password {
+		log.Println("Wrong Password Entered")
 		return model.User{}, errors.New("wrong password entered")
 	}
 
