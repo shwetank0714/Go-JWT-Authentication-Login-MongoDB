@@ -1,35 +1,18 @@
 package main
 
 import (
-	"os"
+	"fmt"
+	"log"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
-	routes "github.com/shwetank0714/jwtmodfile/routes"
+	routers "github.com/shwetank0714/jwtmodfile/routes"
 )
 
-
 func main() {
-	port := os.Getenv("PORT")
 
-	if port == "" {
-		port = "8000"
-	}
+	router := routers.UserRoutes()
 
-	router := gin.New()
-	router.Use(gin.Logger())
+	fmt.Println("Listening on Port 8004 --- ")
+	log.Fatal(http.ListenAndServe(":8004", router))
 
-
-	routes.AuthRoutes(router)
-	routes.UserRoutes(router)
-
-
-	router.GET("/api-1", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{"success":"Access granted for api-1"})
-	})
-
-	router.GET("/api-2", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{"success":"Access granted for api-2"})
-	})
-
-	router.Run(":",port)
 }
