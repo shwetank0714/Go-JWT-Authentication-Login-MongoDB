@@ -127,3 +127,28 @@ func UserLoginHelper(emailId string, password string)  (model.User, error) {
 	return user, nil
 	
 }
+
+func ChangeUserPassword(changePasswordData model.ChangePasswordModel, token string) (model.User, error) {
+	
+	userFilter := bson.M{"email" : changePasswordData.Email}
+
+	var user model.User
+
+	err := collection.FindOne(context.Background(),userFilter).Decode(&user)
+
+	if err == mongo.ErrNoDocuments {
+		return model.User{},errors.New("user not Found")
+	}
+
+	if !validateJwtToken(token) || token != user.Token {
+		return model.User{},errors.New("unauthorized request")
+	}
+
+	if changePasswordData.CurrentPassword != user.Password {
+		return model.User{},errors.New("unauthorized")
+	}
+	
+	user.Password = changePasswordData.NewPassWord
+
+	return user, nil
+}
