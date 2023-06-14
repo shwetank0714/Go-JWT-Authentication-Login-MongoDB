@@ -38,7 +38,7 @@ func CreateUser(user *model.CreateUser) model.User{
 	}
 
 	log.Println("INSERTED RESULT DATA", insertedUserResult)
-	log.Println("Movie inserted succesfully in DB, ID: ", insertedUserResult.InsertedID)
+	log.Println("User inserted succesfully in DB, ID: ", insertedUserResult.InsertedID)
 
 	return newUser
 }
@@ -137,18 +137,30 @@ func ChangeUserPassword(changePasswordData model.ChangePasswordModel, token stri
 	err := collection.FindOne(context.Background(),userFilter).Decode(&user)
 
 	if err == mongo.ErrNoDocuments {
+		log.Println("No DOCX ----")
 		return model.User{},errors.New("user not Found")
 	}
 
-	if !validateJwtToken(token) || token != user.Token {
+	if token != user.Token {
+		log.Println("JWT TOKEN ISSUE ERROR ----")
 		return model.User{},errors.New("unauthorized request")
 	}
 
+	if !validateJwtToken(token){
+		log.Println("JWT TOKEN ISSUE ERROR 2 ----")
+		return model.User{},errors.New("unauthorized request")
+	}
+
+	
+
 	if changePasswordData.CurrentPassword != user.Password {
+		log.Println("Password incorrect ----")
 		return model.User{},errors.New("unauthorized")
 	}
 	
 	user.Password = changePasswordData.NewPassWord
+
+	collection.UpdateOne(context.Background(),userFilter, user)
 
 	return user, nil
 }

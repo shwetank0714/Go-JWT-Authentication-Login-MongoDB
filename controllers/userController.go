@@ -36,7 +36,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Allow-Control-Allow-Methods", "POST")
 
 	var loginCred model.LoginModel
-	w.WriteHeader(http.StatusBadGateway)
+	// w.WriteHeader(http.StatusBadGateway)
 
 	json.NewDecoder(r.Body).Decode(&loginCred)
 
@@ -56,11 +56,11 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 
 func ChangePassword(w http.ResponseWriter, r *http.Request) {
 
-	// w.Header().Set("Content-Type", "application/x-www-form-urlencode")
-	// w.Header().Set("Allow-Control-Allow-Methods", "PUT")
+	w.Header().Set("Content-Type", "application/x-www-form-urlencode")
+	w.Header().Set("Allow-Control-Allow-Methods", "PUT")
 
 	token := r.Header.Get("Authorization")
-
+	log.Println(token)
 	if token == "" {
 		log.Fatal(http.StatusBadRequest)
 	}
